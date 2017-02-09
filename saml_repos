@@ -2,7 +2,6 @@ gds/dropwizard-saml
 gds/gds-opensaml
 gds/hub-saml
 gds/ida-saml-extensions
-gds/saml-lib
 gds/saml-metadata-bindings
 gds/saml-security
 gds/saml-serialisers
