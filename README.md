@@ -6,11 +6,11 @@ Some scripts and stuff for looking at our libs. You'll need `sqlite3`, at least.
 
 1. Construct the classes database:
 
-    database.py repo1 repo2 ...
+    ./database.py repo1 repo2 ...
 
 2. Generate HTML report:
 
-    sqlite3 classes.db < report.sql > report.htm
+    ./generate_report.sh
     open report.htm
 
 3. ?????
