@@ -30,3 +30,11 @@ ul {
 li {
   margin-bottom: 5px;
 }
+
+tr[data-distinct="1"] td {
+  background-color: #f0f0f0;
+}
+
+tr[data-distinct="1"] td:first-child {
+  color: #cc0000;
+}
