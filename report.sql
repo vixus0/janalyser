@@ -31,7 +31,7 @@ from imports as im
 inner join classes as c2 on im.class_id = c2.rowid
 inner join classes as c1 on im.imports_name = c1.name and im.imports_package = c1.package
 
-where im.imports_package like 'uk.gov.ida.saml%'
+where im.imports_package like 'uk.gov.ida%'
 group by c1.name, c1.package
 order by c1.repo, c1.name, c1.package
 ;
