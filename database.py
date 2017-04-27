@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-import sys
 import os
 import fnmatch
 import sqlite3 as sql
+
+from argparse import ArgumentParser
 
 
 def recursive_glob(treeroot, pattern):
@@ -15,13 +16,15 @@ def recursive_glob(treeroot, pattern):
 
 
 def insert_class(con, name, pkg, repo):
+    print(' - Adding class {}.{} from {}'.format(pkg, name, repo))
     con.execute(
         'insert into classes (name, package, repo) values (?, ?, ?)',
         (name, pkg, repo)
         )
 
 
-def insert_import(con, id, import_name, import_pkg):
+def insert_import(con, id, cls_name, import_name, import_pkg):
+    print('   * Class {}:{} imports {}.{}'.format(id, cls_name, import_pkg, import_name))
     con.execute(
         'insert into imports \
             (class_id, imports_name, imports_package) \
@@ -37,22 +40,31 @@ def parse_java(repo, fn, con):
 
     with open(fn) as f:
         for line in f.readlines():
-            tk = line.split()
+            tk = line.replace(';', '').split()
             if line.startswith('package'):
-                pkg = tk[-1].replace(';', '')
+                pkg = tk[-1]
                 insert_class(con, name, pkg, repo)
                 last_class_id = con.lastrowid
             elif line.startswith('import static'):
-                # should split <pkg>.<class>.<static thing>
+                # split into <pkg>.<class>.<static thing>
                 stuff = tk[-1].rsplit('.', 2)
-                import_pkg = stuff[0]
-                import_class = stuff[1]
-                insert_import(con, last_class_id, import_class, import_pkg)
+                insert_import(con, last_class_id, name, stuff[1], stuff[0])
+            elif line.startswith('import'):
+                # split into <pkg>.<class>
+                stuff = tk[-1].rsplit('.', 1)
+                insert_import(con, last_class_id, name, stuff[1], stuff[0])
 
 
 if __name__ == '__main__':
-    os.remove('classes.db')
-    con = sql.connect('classes.db')
+    ap = ArgumentParser()
+    ap.add_argument('dirs', help='Directories to scan', nargs='+')
+    ap.add_argument('-o', '--out', help='Output sqlite DB file', default='classes.db')
+    args = ap.parse_args()
+
+    if os.path.exists(args.out):
+        os.remove(args.out)
+
+    con = sql.connect(args.out)
     con.execute('''create table classes (
                 name text,
                 package text,
@@ -68,10 +80,9 @@ if __name__ == '__main__':
                 )''')
 
     with con:
-        for repo in sys.argv[1:]:
-            repo_path = os.path.expanduser(repo)
-            repo_name = os.path.basename(repo)
-            print('Scanning repo '+repo_path)
+        for repo in args.dirs:
+            repo_path = os.path.expanduser(repo).rstrip('/')
+            repo_name = os.path.split(repo_path)[-1]
+            print('\nScanning repo {} ({})'.format(repo_path, repo_name))
             for fn in recursive_glob(repo_path, '*.java'):
-                print(' - '+fn)
                 parse_java(repo_name, fn, con.cursor())
