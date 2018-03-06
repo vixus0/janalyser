@@ -1,6 +1,6 @@
-# SAML Library Analysis
+# Janalyser
 
-Some scripts and stuff for looking at our libs. You'll need `sqlite3`, at least.
+Some scripts and stuff for analysing the utter mess that is your Java code. You'll need `sqlite3`, at least.
 
 ## How to use
 
